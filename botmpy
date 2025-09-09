@@ -1,0 +1,87 @@
+import os
+from telegram import Update, InputFile, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
+from yt_dlp import YoutubeDL
+
+TOKEN = "8412598453:AAFYaSh-U3bI51H1QcIgF_7QCn1G8Tpu9j4"
+
+# ===== Handlers =====
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "👋 Hai, selamat datang di **Bot Downloader**!\n\n"
+        "📌 Kirim link video dari TikTok / Instagram / YouTube.\n"
+        "Nanti aku kasih pilihan format MP3 atau MP4 HD. 😉"
+    )
+
+# Saat user kirim link
+async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    url = update.message.text.strip()
+
+    # Simpan URL sementara di context user
+    context.user_data["url"] = url
+
+    # Bikin tombol pilihan
+    keyboard = [
+        [
+            InlineKeyboardButton("🎵 MP3", callback_data="mp3"),
+            InlineKeyboardButton("🎬 MP4 HD", callback_data="mp4"),
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text("Pilih format yang kamu mau:", reply_markup=reply_markup)
+
+# Saat tombol ditekan
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    url = context.user_data.get("url")
+    if not url:
+        await query.edit_message_text("⚠️ Tidak ada link ditemukan, kirim ulang link video.")
+        return
+
+    if query.data == "mp3":
+        await query.edit_message_text("⏳ Sedang download audio MP3...")
+        with YoutubeDL({
+            "format": "bestaudio",
+            "outtmpl": "download.%(ext)s",
+            "postprocessors": [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }]
+        }) as ydl:
+            info = ydl.extract_info(url, download=True)
+            file_path = ydl.prepare_filename(info).replace(info["ext"], "mp3")
+
+        await query.message.reply_audio(audio=InputFile(file_path))
+        os.remove(file_path)
+
+    elif query.data == "mp4":
+        await query.edit_message_text("⏳ Sedang download video MP4 HD...")
+        with YoutubeDL({
+            "format": "bestvideo+bestaudio/best",
+            "outtmpl": "download.%(ext)s"
+        }) as ydl:
+            info = ydl.extract_info(url, download=True)
+            file_path = ydl.prepare_filename(info)
+
+        await query.message.reply_video(video=InputFile(file_path))
+        os.remove(file_path)
+
+# ===== Main =====
+
+def main():
+    app = Application.builder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_link))
+    app.add_handler(CallbackQueryHandler(button))
+
+    print("🤖 Bot jalan...")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
