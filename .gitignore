@@ -1,6 +1,26 @@
-venv/
+# Python cache
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
 venv/
-__pycache__/
-*.pyc
+.env/
+.venv/
+
+# Termux / Linux junk
+*.log
+*.swp
+*.swo
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.iml
+
+# Output files
+*.mp4
+*.mp3
