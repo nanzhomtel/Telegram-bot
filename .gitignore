@@ -31,3 +31,43 @@ __pycache__/
 *.pyd
 *.db
 *.log
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# --- Virtual Environments ---
+venv/
+ENV/
+env/
+.venv/
+*.egg-info/
+.eggs/
+
+# --- Logs & Caches ---
+*.log
+*.pot
+*.pyc
+*.pkl
+*.sqlite3
+*.db
+.cache/
+.pytest_cache/
+.mypy_cache/
+coverage/
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# --- Config / Secrets ---
+.env
+*.key
+*.pem
+*.crt
